@@ -1,43 +1,49 @@
 {
-  "name": "toolbox",
-  "version": "1.12.16",
-  "description": "Flespi ToolboX",
-  "productName": "ToolboX",
-  "capacitorId": "",
-  "author": "Sergey Buntsevich <scarry92@yandex.ru>",
+  "name": "expr-tool",
+  "version": "1.0.0",
+  "description": "Flespi expression tools",
+  "productName": "exprTool",
+  "author": "Siarhei Buntsevich <scarry92@yandex.ru>",
   "private": true,
   "scripts": {
-    "lint": "eslint --ext .js,.vue src",
-    "dev": "quasar dev -m spa",
-    "dev_local": "env NODE_LOCAL=local quasar dev -m spa",
+    "lint": "eslint --ext .js,.ts,.vue ./",
+    "test": "echo \"No test specified\" && exit 0",
     "build": "quasar build -m spa",
-    "deploy": "rm -rf dist && npm run build && rm -rf deploy && mkdir deploy && cp -R dist/spa/* misc CNAME LICENSE package.json deploy && cp README.md deploy/README.md && node_modules/git-directory-deploy/bin/git-directory-deploy.sh -ddeploy -bgh-pages -rhttps://git.gurtam.net/flespi/frontend/toolbox.git && rm -rf deploy && git push github gh-pages"
+    "deploy": "rm -rf dist && npm run build && rm -rf deploy && mkdir deploy && cp -R dist/spa/* LICENSE package.json deploy && cp README.md deploy/README.md && node_modules/git-directory-deploy/bin/git-directory-deploy.sh -ddeploy -bgh-pages -rhttps://git.gurtam.net/flespi/frontend/toolbox.git && rm -rf deploy && git push github gh-pages"
   },
   "dependencies": {
-    "@quasar/extras": "^1.10.7",
-    "core-js": "^3.14.0",
+    "@codemirror/autocomplete": "^0.19.12",
+    "@codemirror/commands": "^0.19.7",
+    "@codemirror/comment": "^0.19.0",
+    "@codemirror/gutter": "^0.19.9",
+    "@codemirror/highlight": "^0.19.7",
+    "@codemirror/history": "^0.19.2",
+    "@codemirror/lang-javascript": "^0.19.6",
+    "@codemirror/lang-json": "^0.19.1",
+    "@codemirror/panel": "^0.19.1",
+    "@codemirror/state": "^0.19.6",
+    "@codemirror/view": "^0.19.39",
+    "@quasar/extras": "^1.0.0",
+    "core-js": "^3.6.5",
     "flespi-io-js": "github:flespi-software/flespi-io-js",
-    "json2csv": "^5.0.5",
-    "lodash": "^4.17.21",
-    "quasar": "^1.15.20",
-    "qvirtualscroll": "github:flespi-software/QVirtualScroll",
-    "vue-draggable-resizable": "^2.3.0",
-    "vue-i18n": "^8.24.4",
-    "vue-virtual-scroll-list": "^1.4.6"
+    "mitt": "^3.0.0",
+    "quasar": "^2.0.0",
+    "vuex": "^4.0.1"
   },
   "devDependencies": {
-    "@quasar/app": "^2.2.10",
-    "babel-eslint": "^10.0.1",
-    "eslint": "^7.21.0",
-    "eslint-config-prettier": "^8.1.0",
-    "eslint-plugin-vue": "^7.7.0",
-    "eslint-webpack-plugin": "^2.4.0",
-    "git-directory-deploy": "^1.5.1"
-  },
-  "engines": {
-    "node": ">= 10.18.1",
-    "npm": ">= 6.13.4",
-    "yarn": ">= 1.21.1"
+    "@babel/eslint-parser": "^7.13.14",
+    "@quasar/app": "^3.0.0",
+    "@types/node": "^12.20.21",
+    "@typescript-eslint/eslint-plugin": "^4.16.1",
+    "@typescript-eslint/parser": "^4.16.1",
+    "eslint": "^7.14.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.19.1",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-vue": "^7.0.0",
+    "git-directory-deploy": "^1.5.1",
+    "process": "^0.11.10"
   },
   "browserslist": [
     "last 10 Chrome versions",
@@ -49,5 +55,10 @@
     "last 8 FirefoxAndroid versions",
     "last 10 iOS versions",
     "last 5 Opera versions"
-  ]
+  ],
+  "engines": {
+    "node": ">= 12.22.1",
+    "npm": ">= 6.13.4",
+    "yarn": ">= 1.21.1"
+  }
 }

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Example</title>
+</head>
+<body style="margin: 0;">
+  <iframe id="frame" name="iframe" style="width: 100%; height: 100vh;" src="https://localhost:7010/#/expr?token=obujfASVFWInJxZ4TLnGtYnKJnJVZFMbE6kJv0s0KZdkk0c1zpxQbJqKUXvHr5IV&theme=dark" frameborder="0"></iframe>
+  <script>
+    const iframe = document.querySelector('#frame')
+    const events = {
+      ready () {
+        const messages = [{
+          "channel.id": 5890,
+          "custom.custom": 2,
+          "custom.custom1": 357,
+          "custom.custom2": 4,
+          "custom.custom3": 207,
+          "device.id": 481647,
+          "device.name": "1234567890008880 (ips autocreated)",
+          "device.type.id": 10,
+          "ident": "1234567890008880",
+          "peer": "193.193.165.35:42212",
+          "position.altitude": 0,
+          "position.direction": 207,
+          "position.latitude": 9.002812,
+          "position.longitude": -79.49566,
+          "position.satellites": 4,
+          "position.speed": 2,
+          "protocol.id": 7,
+          "server.timestamp": 1640267766.495557,
+          "timestamp": 1640267738
+        }]
+        const payload = `FlespiTools|iframe|ExpressionsSetData=>${JSON.stringify(messages)}`
+        iframe.contentWindow.postMessage(payload, '*')
+        const expr = 'FlespiTools|iframe|ExpressionsSetExpression=>custom.custom2 > 5'
+        iframe.contentWindow.postMessage(expr, '*')
+        const columns = ['ident', 'peer', 'posiiton.latitude', 'position.longitude']
+        const cols = `FlespiTools|iframe|ExpressionsSetColumns=>${JSON.stringify(columns)}`
+        iframe.contentWindow.postMessage(cols, '*')
+      }
+    }
+    window.addEventListener('message', (event) => {
+      let cmd,
+        payload
+      if (typeof event.data === 'string' && event.data.indexOf('FlespiTools|') === 0) {
+        let data = event.data.split('|')
+        const windowName = 'iframe' // setted iframe name
+        data = data[windowName ? 2 : 1].split('=>')
+        cmd = data[0]
+        try {
+          payload = JSON.parse(data[1])
+        } catch (e) {
+          payload = data[1]
+        }
+        if (cmd) {
+          events[cmd](payload)
+        }
+      }
+    })
+  </script>
+</body>
+</html>

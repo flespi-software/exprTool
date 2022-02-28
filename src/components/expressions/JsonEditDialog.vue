@@ -1,7 +1,7 @@
 <template>
-  <q-dialog ref="dialogRef" @hide="onHide" @show="showCode">
-    <q-card class="q-dialog-plugin" :class="{'bg-grey-9': isDark}" style="min-width: 50vh;">
-      <q-card-section class="q-pa-none" style="height: 50vh;">
+  <q-dialog ref="dialogRef" @hide="onHide" @show="showCode" full-width full-height>
+    <q-card class="q-dialog-plugin" :class="{'bg-grey-9': isDark}">
+      <q-card-section class="q-pa-none" style="height: calc(100% - 50px);">
         <json-input v-if="isCodeVisible" v-model="input" :theme="theme"/>
       </q-card-section>
       <q-card-actions align="right">

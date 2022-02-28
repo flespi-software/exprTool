@@ -485,7 +485,7 @@ export type TFlespiExprData = {
   input: TFlespiMessage | TFlespiMessage[],
   timezone: TTimezonesNames
 }
-export type TFlespiExprDataError= { column: number, text: string }
+export type TFlespiExprDataError= { column: number, reason: string }
 export type TFlespiExprValidationModel = {
   code: 0 | 1, // 0 - success, 1 - error(field not found)
   index: number,

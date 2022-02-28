@@ -84,6 +84,8 @@ export default defineComponent({
         const validData = await validateData() as TFlespiExprValidResp
         validation.value = validData.result
         errors.value = validData.errors
+      } else {
+        validation.value = []
       }
     }
     const updateInput = (messages: TFlespiMessage[]) => {
@@ -109,7 +111,7 @@ export default defineComponent({
       if (dataError.value) {
         res = [{
           code: 2,
-          reason: dataError.value.text,
+          reason: dataError.value.reason,
           column: dataError.value.column
         }]
       }

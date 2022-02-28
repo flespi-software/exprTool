@@ -29,10 +29,10 @@
       <q-tr :props="props" @mouseover="setHoveredMessage(props.rowIndex)" @mouseleave="removeHoveredMessage()">
         <q-td v-for="col in props.cols" :key="col.name" :props="props" :class="[highlightCol(col, props.rowIndex)]">
           <template v-if="col.field === '__result'">
-            <span class="text-bold text-italic" v-if="validateModels[props.rowIndex]?.result === undefined">
-              {{validateModels[props.rowIndex].error?.text}}
+            <span class="text-bold text-italic" v-if="filteredValidateModels[props.rowIndex]?.result === undefined">
+              {{filteredValidateModels[props.rowIndex].error?.reason}}
             </span>
-            <span class="text-bold" v-else>{{validateModels[props.rowIndex]?.result}}</span>
+            <span class="text-bold" v-else>{{filteredValidateModels[props.rowIndex]?.result}}</span>
           </template>
           <template v-else>
             {{ props.row[col.name] }}
@@ -79,7 +79,8 @@ function getCols (
         label: 'Expression result',
         align: 'center',
         field: '__result',
-        headerClasses: 'header--result-col'
+        classes: 'result-col',
+        headerClasses: 'result-col result-col__header'
       }
     )
   }
@@ -211,7 +212,14 @@ const useFilterMessagesByResultFeature = (messages: Ref<TFlespiMessage[]>, valid
     }
     return msgs
   })
-  return { needFilterByResult, filteredMessages }
+  const filteredValidateModels = computed<TFlespiExprValidationModel[]>(() => {
+    let valids = validations.value
+    if (needFilterByResult.value) {
+      valids = valids.filter(model => model.result !== undefined)
+    }
+    return valids
+  })
+  return { needFilterByResult, filteredMessages, filteredValidateModels }
 }
 
 export default defineComponent({
@@ -255,7 +263,7 @@ export default defineComponent({
     }
 
     function useHoverMessageFeature (validationModels: Ref<TFlespiExprValidationModel[]>) {
-      let currentError: { column: number, text: string } | undefined
+      let currentError: { column: number, reason: string } | undefined
       return {
         setHoveredMessage (index: number) {
           const model = validationModels.value[index]
@@ -272,15 +280,19 @@ export default defineComponent({
       }
     }
 
+    const { needFilterByResult, filteredMessages, filteredValidateModels } = useFilterMessagesByResultFeature(messages, validateModels)
+
     return {
       columns,
       isDark,
       ...useImportJsonFeature(),
       ...useUpdateCellFeature(messages),
       showEditDialog,
-      ...useFilterMessagesByResultFeature(messages, validateModels),
-      ...useHoverMessageFeature(validateModels),
-      ...useHighlightRowsFeature(validateModels, theme)
+      needFilterByResult,
+      filteredMessages,
+      filteredValidateModels,
+      ...useHoverMessageFeature(filteredValidateModels),
+      ...useHighlightRowsFeature(filteredValidateModels, theme)
     }
   },
   emits: ['update:cell', 'update:messages', 'show:error']
@@ -289,20 +301,22 @@ export default defineComponent({
 
 <style lang="sass">
 .messages-table
+  .result-col
+    border-right: 2px $grey-6 solid!important
   &.messages-table--dark-theme
     background-color: $grey-9
     .q-table__top,
     .q-table__bottom,
     thead tr:first-child th
       background-color: $grey-9
-      &.header--result-col
+      &.result-col__header
         background-color: $grey-8
   .q-table__top,
   .q-table__bottom,
   thead tr:first-child th
     /* bg color is important for th; just specify one */
     background-color: white
-    &.header--result-col
+    &.result-col__header
       background-color: $grey-4
 
   thead tr th

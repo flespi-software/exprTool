@@ -96,6 +96,15 @@ function useUnderlineFeature (codeMirrorView: Ref<EditorView | undefined>, error
   })
 }
 
+function useAutofocusFeature (codeMirrorView: Ref<EditorView | undefined>) {
+  const timer = setInterval(() => {
+    if (codeMirrorView.value) {
+      codeMirrorView.value.focus()
+      if (codeMirrorView.value.hasFocus) clearInterval(timer)
+    }
+  }, 500)
+}
+
 export default defineComponent({
   name: 'ExpressionInput',
   props: {
@@ -138,6 +147,7 @@ export default defineComponent({
     useThemeFeature(codeMirrorView, theme)
     useCMDocUpdateFeature(codeMirrorView, modelValue)
     useUnderlineFeature(codeMirrorView, errors)
+    useAutofocusFeature(codeMirrorView)
     return {
       expression, codeMirrorRef, codeMirrorView
     }

@@ -1,6 +1,6 @@
 {
   "name": "expr-tool",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Flespi expression tools",
   "productName": "exprTool",
   "author": "Siarhei Buntsevich <scarry92@yandex.ru>",

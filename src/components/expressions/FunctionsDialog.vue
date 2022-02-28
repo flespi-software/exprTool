@@ -1,7 +1,7 @@
 <template>
- <q-dialog ref="dialogRef" @hide="onDialogHide" seamless>
+ <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="min-width: 50vw;" :class="{'bg-grey-9': isDark}">
-      <q-card-section style="height: 50vh;" class="scroll q-pa-none">
+      <q-card-section style="height: 90vh;" class="scroll q-pa-none">
         <functions-table :functions="functions" :filter="filter" :theme="theme"/>
       </q-card-section>
       <q-card-actions>

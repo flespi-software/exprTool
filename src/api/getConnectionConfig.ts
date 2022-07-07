@@ -3,7 +3,7 @@ import packageJson from '../../package.json'
 export default () => {
   const version = packageJson.version
 
-  let rest = '',
+  let rest,
     socket = ''
   /* if local dev build */
   if (DEV && LOCAL) {
@@ -23,13 +23,14 @@ export default () => {
 
   const isDev = DEV || (PROD && window.location.host.indexOf('flespi.io') === -1)
   const mqttSettings = { protocolVersion: 5, wsOptions: { objectMode: false, perMessageDeflate: true } }
+  const clientId = `flespi-expr-tools-${version}${isDev ? '-dev' : ''}-${Math.random().toString(16).substr(2, 8)}`
   const connectionConfig = {
     socketConfig: {
       server: socket,
-      clientId: `flespi-expr-tools-${version}${isDev ? '-dev' : ''}-${Math.random().toString(16).substr(2, 8)}`,
+      clientId,
       mqttSettings
     },
-    httpConfig: rest ? { server: rest } : undefined
+    httpConfig: { server: rest, flespiApp: clientId }
   }
   return connectionConfig
 }

@@ -12,7 +12,8 @@ export interface IConnectorError<T> extends AxiosError<T> {
 
 export interface IRestConnectionConfig {
   server: string,
-  token?: string
+  token?: string,
+  flespiApp?: string
 }
 
 export interface IConnector {

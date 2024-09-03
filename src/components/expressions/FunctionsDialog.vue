@@ -1,11 +1,11 @@
 <template>
  <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card class="q-dialog-plugin" style="min-width: 50vw;" :class="{'bg-grey-9': isDark}">
-      <q-card-section style="height: 90vh;" class="scroll q-pa-none">
+      <q-card-section style="height: 80vh;" class="scroll q-pa-none">
         <functions-table :functions="functions" :filter="filter" :theme="theme"/>
       </q-card-section>
       <q-card-actions>
-        <q-input v-model="filter" type="text" label="Filter" class="col-10" :dark="isDark" standout="bg-grey-4 text-grey-9"/>
+        <q-input v-model="filter" type="text" label="Filter" dense class="col-10" :dark="isDark" standout="bg-grey-4 text-grey-9"/>
         <div class="col-2 text-center">
           <q-btn flat label="Close" @click="onCancelClick" :color="isDark ? 'white' : ''"/>
         </div>

@@ -5,10 +5,10 @@ import connector from 'src/api/flespi-io'
 import { TFlepsiLoginModel, TFlespiRegion, TFlespiRegions } from 'src/api/flespi'
 
 const actions: ActionTree<SystemStateInterface, StateInterface> = {
-  async setupTokenInfo ({ commit }, token: string) : Promise<boolean> {
+  async setupTokenInfo ({ commit }) : Promise<boolean> {
     let result = false
     try {
-      const tokenInfoResp = await connector.http.platform.customer.tokens.get(`key=${token}`)
+      const tokenInfoResp = await connector.http.get('/auth/info')
       commit('setTokenInfo', tokenInfoResp.data.result[0])
       result = true
     } catch (e) {
@@ -45,7 +45,7 @@ const actions: ActionTree<SystemStateInterface, StateInterface> = {
     }
     commit('setRegion', region)
     commit('setToken', token)
-    const loggedin = <boolean> await dispatch('setupTokenInfo', token)
+    const loggedin = <boolean> await dispatch('setupTokenInfo')
     commit('setLogged', loggedin)
     return loggedin
   }

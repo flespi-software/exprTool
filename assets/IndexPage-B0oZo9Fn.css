@@ -1,0 +1,1 @@
+.dash{background-image:url(../mountain.svg);background-position:50% 100px;background-repeat:no-repeat;background-size:contain;width:100%;height:100%;overflow:auto}.dash--dark{background-color:#424242}.dash__element{min-height:200px;max-height:33%}.dash__element--mobile,.dash__element:hover{opacity:.9}.dash__element{opacity:.6}

@@ -1,7 +1,11 @@
 <template>
   <q-table
     class="messages-table"
-    :class="{'messages-table--col-info': validateModels.length, 'bg-grey-9': isDark, 'messages-table--dark-theme': isDark}"
+    :class="{
+      'messages-table--col-info': validateModels.length,
+      'bg-grey-9': isDark,
+      'messages-table--dark-theme': isDark,
+    }"
     title="Messages"
     :rows="filteredMessages"
     :dense="messages.length > 20"
@@ -14,11 +18,17 @@
     <template v-slot:top>
       <div class="q-table__title">Messages</div>
       <q-space />
-      <q-file class="hidden" ref="fileCtrl" v-model="file" accept=".json"/>
-      <q-toggle flat round icon="mdi-format-list-bulleted-square" :disable="!validateModels.length" v-model="needFilterByResult">
+      <q-file class="hidden" ref="fileCtrl" v-model="file" accept=".json" />
+      <q-toggle
+        flat
+        round
+        icon="mdi-format-list-bulleted-square"
+        :disable="!validateModels.length"
+        v-model="needFilterByResult"
+      >
         <q-tooltip>Show messages with result</q-tooltip>
       </q-toggle>
-      <q-btn flat round icon="mdi-playlist-plus" @click="e => importJson(e as Event)">
+      <q-btn flat round icon="mdi-playlist-plus" @click="(e) => importJson(e)">
         <q-tooltip>Import</q-tooltip>
       </q-btn>
       <q-btn round class="q-ml-sm" flat @click="showEditDialog" icon="mdi-code-braces">
@@ -26,24 +36,45 @@
       </q-btn>
     </template>
     <template v-slot:body="props">
-      <q-tr :props="props" @mouseover="setHoveredMessage(props.rowIndex)" @mouseleave="removeHoveredMessage()">
-        <q-td v-for="col in props.cols" :key="col.name" :props="props" :class="[highlightCol(col, props.rowIndex)]">
+      <q-tr
+        :props="props"
+        @mouseover="setHoveredMessage(props.rowIndex)"
+        @mouseleave="removeHoveredMessage()"
+      >
+        <q-td
+          v-for="col in props.cols"
+          :key="col.name"
+          :props="props"
+          :class="[highlightCol(col, props.rowIndex)]"
+        >
           <template v-if="col.field === '__result'">
-            <span class="text-bold text-italic" v-if="filteredValidateModels[props.rowIndex]?.result === undefined">
-              {{filteredValidateModels[props.rowIndex].error?.reason}}
+            <span
+              class="text-bold text-italic"
+              v-if="filteredValidateModels[props.rowIndex]?.result === undefined"
+            >
+              {{ filteredValidateModels[props.rowIndex]?.error?.reason }}
             </span>
-            <span class="text-bold" v-else>{{filteredValidateModels[props.rowIndex]?.result}}</span>
+            <span class="text-bold" v-else>
+              {{ filteredValidateModels[props.rowIndex]?.result }}
+            </span>
           </template>
           <template v-else>
             {{ props.row[col.name] }}
             <q-popup-edit
-              v-slot="scope" :color="isDark ? 'grey-9' : ''"
+              v-slot="scope"
+              :color="isDark ? 'grey-9' : ''"
               :model-value="getEditValue(props.row[col.name])"
-              @update:model-value="val => $emit('update:cell', ...updateCell(col.name, props.rowIndex, val))"
+              @update:model-value="(val) => $emit('update:cell', ...updateCell(col.name, props.rowIndex, val))"
               :title="`Update ${col.name}`"
-              buttons persistent
+              buttons
+              persistent
             >
-              <q-input v-model="scope.value" dense autofocus :color="isDark ? 'grey-9' : ''" />
+              <q-input
+                v-model="scope.value"
+                dense
+                autofocus
+                :color="isDark ? 'grey-9' : ''"
+              />
             </q-popup-edit>
           </template>
         </q-td>
@@ -53,54 +84,57 @@
 </template>
 
 <script lang="ts">
-import { TFlespiExprValidationModel, TFlespiMessage } from 'src/api/flespi'
-import { defineComponent, toRefs, ref, computed, watch, PropType, Ref, getCurrentInstance } from 'vue'
+import {
+  defineComponent,
+  toRefs,
+  ref,
+  computed,
+  watch,
+  PropType,
+  Ref,
+  getCurrentInstance,
+} from 'vue'
 import { useQuasar, QTableProps, QFileProps, QFile } from 'quasar'
 import JsonEditDialog from './JsonEditDialog.vue'
+import { TFlespiExprValidationModel, TFlespiMessage } from 'src/api/flespi'
 import { Flatten } from 'src/global'
 
-function getCols (
+function getCols(
   columns: Ref<string[]>,
-  validations: Ref<TFlespiExprValidationModel[]>
-) : QTableProps['columns'] {
+  validations: Ref<TFlespiExprValidationModel[]>,
+): QTableProps['columns'] {
   const cols = columns.value.reduce((result: QTableProps['columns'] = [], fieldName) => {
     result.push({
       name: fieldName,
       label: fieldName,
       align: 'center',
-      field: fieldName
+      field: fieldName,
     })
     return result
   }, [])
   if (columns.value.length && validations.value.length) {
-    cols?.unshift(
-      {
-        name: 'Expression result',
-        label: 'Expression result',
-        align: 'center',
-        field: '__result',
-        classes: 'result-col',
-        headerClasses: 'result-col result-col__header'
-      }
-    )
+    cols?.unshift({
+      name: 'Expression result',
+      label: 'Expression result',
+      align: 'center',
+      field: '__result',
+      classes: 'result-col',
+      headerClasses: 'result-col result-col__header',
+    })
   }
   return cols
 }
-type THighlightLevel = {
-  data: number,
-  results: number
-}
-function useHighlightRowsFeature (validations: Ref<TFlespiExprValidationModel[]>, theme: Ref<'dark'|'white'>) {
+
+type THighlightLevel = { data: number; results: number }
+
+function useHighlightRowsFeature(
+  validations: Ref<TFlespiExprValidationModel[]>,
+  theme: Ref<'dark' | 'white'>,
+) {
   const highlightLevels = computed<THighlightLevel>(() => {
-    let res = {
-      data: 2,
-      results: 3
-    }
+    let res = { data: 2, results: 3 }
     if (theme.value === 'dark') {
-      res = {
-        data: 8,
-        results: 9
-      }
+      res = { data: 8, results: 9 }
     }
     return res
   })
@@ -117,9 +151,10 @@ function useHighlightRowsFeature (validations: Ref<TFlespiExprValidationModel[]>
     return classes
   }
 
-  function highlightCol (col: Flatten<QTableProps['columns']>, index: number) {
+  function highlightCol(col: Flatten<QTableProps['columns']>, index: number) {
     const validateModel = validations.value[index]
-    let res
+    if (!validateModel) return ''
+    let res: string
     if (col?.field === '__result') {
       res = getHighlightClasses(validateModel, highlightLevels.value.results)
     } else {
@@ -128,86 +163,79 @@ function useHighlightRowsFeature (validations: Ref<TFlespiExprValidationModel[]>
     return res
   }
 
-  return {
-    highlightLevels,
-    highlightCol
-  }
+  return { highlightLevels, highlightCol }
 }
 
-function useUpdateCellFeature (messages: Ref<TFlespiMessage[]>) {
-  const getEditValue = (value: unknown) => {
-    return typeof value === 'string'
-      ? value
-      : JSON.stringify(value)
-  }
+function useUpdateCellFeature(messages: Ref<TFlespiMessage[]>) {
+  const getEditValue = (value: unknown) =>
+    typeof value === 'string' ? value : JSON.stringify(value)
   const updateCell = (name: string, index: number, value: string) => {
-    const dataType = typeof messages.value[index][name]
+    const dataType = typeof messages.value[index]?.[name]
     let data: unknown = value
     if (dataType !== 'string') {
       try {
         data = JSON.parse(value) as unknown
-      } catch (e) {
+      } catch {
         data = undefined
       }
     }
-    return [name, index, data]
+    return [name, index, data] as const
   }
   return { getEditValue, updateCell }
 }
 
-function useImportJsonFeature () {
-  const fileCtrl = ref<QFile|null>(null)
+function useImportJsonFeature() {
+  const fileCtrl = ref<QFile | null>(null)
   const vm = getCurrentInstance() as NonNullable<ReturnType<typeof getCurrentInstance>>
   const file = ref<QFileProps['modelValue']>(null)
-  const readFile = (file: File) : Promise<string|ArrayBuffer|null> => {
+  const readFile = (file: File): Promise<string | ArrayBuffer | null> => {
     const reader = new FileReader()
     return new Promise((resolve, reject) => {
-      reader.onload = () => {
-        resolve(reader.result)
-      }
+      reader.onload = () => resolve(reader.result)
       reader.onerror = reject
       reader.readAsText(file)
     })
   }
-  const resolveData = () : Promise<TFlespiMessage[]|undefined> => new Promise((resolve, reject) => {
-    const stopWatching = watch(file, async (file: QFileProps['modelValue']) => {
-      const filePicker = fileCtrl.value as unknown as QFile
-      if (file instanceof File) {
-        const data = await readFile(file)
-        filePicker.removeAtIndex(0)
-        try {
-          let messages = JSON.parse(data as string) as (TFlespiMessage | TFlespiMessage[])
-          if (!Array.isArray(messages)) {
-            messages = [messages]
+  const resolveData = (): Promise<TFlespiMessage[] | undefined> =>
+    new Promise((resolve, reject) => {
+      const stopWatching = watch(file, async (file: QFileProps['modelValue']) => {
+        const filePicker = fileCtrl.value as unknown as QFile
+        if (file instanceof File) {
+          const data = await readFile(file)
+          filePicker.removeAtIndex(0)
+          try {
+            let messages = JSON.parse(data as string) as TFlespiMessage | TFlespiMessage[]
+            if (!Array.isArray(messages)) messages = [messages]
+            resolve(messages)
+          } catch (e) {
+            reject(e as Error)
           }
-          resolve(messages)
-        } catch (e) {
-          reject(e)
+          stopWatching()
         }
-        stopWatching()
-      }
+      })
     })
-  })
   const importJson = (e: Event) => {
     const filePicker = fileCtrl.value as unknown as QFile
     filePicker.pickFiles(e)
-    return resolveData()
-      .then((msgs) => {
-        vm.emit('update:messages', msgs)
-      })
+    return resolveData().then((msgs) => {
+      vm.emit('update:messages', msgs)
+    })
   }
 
   return { fileCtrl, file, importJson }
 }
 
-const useFilterMessagesByResultFeature = (messages: Ref<TFlespiMessage[]>, validations: Ref<TFlespiExprValidationModel[]>) => {
-  const needFilterByResult = ref(false)
+const useFilterMessagesByResultFeature = (
+  messages: Ref<TFlespiMessage[]>,
+  validations: Ref<TFlespiExprValidationModel[]>,
+) => {
+  const needFilterByResult = ref<boolean>(false)
   const filteredMessages = computed<TFlespiMessage[]>(() => {
     let msgs = messages.value || []
     if (needFilterByResult.value && validations.value.length) {
       msgs = msgs.filter((_, index) => {
         const validateModel = validations.value[index]
-        return validateModel.result !== undefined
+        return validateModel && validateModel.result !== undefined
       })
     }
     return msgs
@@ -215,7 +243,7 @@ const useFilterMessagesByResultFeature = (messages: Ref<TFlespiMessage[]>, valid
   const filteredValidateModels = computed<TFlespiExprValidationModel[]>(() => {
     let valids = validations.value
     if (needFilterByResult.value) {
-      valids = valids.filter(model => model.result !== undefined)
+      valids = valids.filter((model) => model.result !== undefined)
     }
     return valids
   })
@@ -228,24 +256,24 @@ export default defineComponent({
     messages: {
       type: Array as PropType<TFlespiMessage[]>,
       default: () => [],
-      required: true
+      required: true,
     },
     cols: {
       type: Array as PropType<string[]>,
       default: () => [],
-      required: true
+      required: true,
     },
     validateModels: {
       type: Array as PropType<TFlespiExprValidationModel[]>,
       default: () => [],
-      required: true
+      required: true,
     },
     theme: {
-      type: String as PropType<'dark'|'white'>,
-      default: 'white'
-    }
+      type: String as PropType<'dark' | 'white'>,
+      default: 'white',
+    },
   },
-  setup (props, { emit }) {
+  setup(props, { emit }) {
     const { messages, validateModels, cols, theme } = toRefs(props)
 
     const columns = computed<QTableProps['columns']>(() => getCols(cols, validateModels))
@@ -257,30 +285,33 @@ export default defineComponent({
         component: JsonEditDialog,
         componentProps: {
           data: messages.value,
-          theme: props.theme
-        }
-      }).onOk(data => emit('update:messages', data))
+          theme: props.theme,
+        },
+      }).onOk((data) => emit('update:messages', data))
     }
 
-    function useHoverMessageFeature (validationModels: Ref<TFlespiExprValidationModel[]>) {
-      let currentError: { column: number, reason: string } | undefined
+    function useHoverMessageFeature(
+      validationModels: Ref<TFlespiExprValidationModel[]>,
+    ) {
+      let currentError: TFlespiExprValidationModel['error'] | undefined
       return {
-        setHoveredMessage (index: number) {
+        setHoveredMessage(index: number) {
           const model = validationModels.value[index]
           if (model?.error) {
             currentError = model.error
             emit('show:error', model.error)
           }
         },
-        removeHoveredMessage () {
+        removeHoveredMessage() {
           if (currentError) {
             emit('show:error')
           }
-        }
+        },
       }
     }
 
-    const { needFilterByResult, filteredMessages, filteredValidateModels } = useFilterMessagesByResultFeature(messages, validateModels)
+    const { needFilterByResult, filteredMessages, filteredValidateModels } =
+      useFilterMessagesByResultFeature(messages, validateModels)
 
     return {
       columns,
@@ -292,17 +323,17 @@ export default defineComponent({
       filteredMessages,
       filteredValidateModels,
       ...useHoverMessageFeature(filteredValidateModels),
-      ...useHighlightRowsFeature(filteredValidateModels, theme)
+      ...useHighlightRowsFeature(filteredValidateModels, theme),
     }
   },
-  emits: ['update:cell', 'update:messages', 'show:error']
+  emits: ['update:cell', 'update:messages', 'show:error'],
 })
 </script>
 
 <style lang="sass">
 .messages-table
   .result-col
-    border-right: 2px $grey-6 solid!important
+    border-right: 2px $grey-6 solid !important
   &.messages-table--dark-theme
     background-color: $grey-9
     .q-table__top,
@@ -314,7 +345,6 @@ export default defineComponent({
   .q-table__top,
   .q-table__bottom,
   thead tr:first-child th
-    /* bg color is important for th; just specify one */
     background-color: white
     &.result-col__header
       background-color: $grey-4
@@ -325,9 +355,7 @@ export default defineComponent({
   thead tr:first-child th
     top: 0
 
-  /* this is when the loading indicator appears */
   &.q-table--loading thead tr:last-child th
-    /* height of all previous header rows */
     top: 48px
   &.messages-table--col-info
     th:first-child,

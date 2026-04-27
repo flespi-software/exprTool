@@ -1,7 +1,7 @@
 import { parser } from '@lezer/javascript'
 import { LRLanguage, LanguageSupport } from '@codemirror/language'
-import { styleTags, tags as t } from '@codemirror/highlight'
-import { completeFromList, Completion } from '@codemirror/autocomplete'
+import { styleTags, tags as t } from '@lezer/highlight'
+import { Completion, completeFromList } from '@codemirror/autocomplete'
 
 export const exprlang = LRLanguage.define({
   parser: parser.configure({
@@ -10,7 +10,9 @@ export const exprlang = LRLanguage.define({
         BooleanLiteral: t.bool,
         null: t.null,
         VariableName: t.variableName,
-        'CallExpression/VariableName TaggedTemplateExpression/VariableName': t.function(t.variableName),
+        'CallExpression/VariableName TaggedTemplateExpression/VariableName': t.function(
+          t.variableName,
+        ),
         VariableDefinition: t.definition(t.variableName),
         Label: t.labelName,
         PropertyName: t.propertyName,
@@ -37,18 +39,21 @@ export const exprlang = LRLanguage.define({
         '{ }': t.brace,
         'InterpolationStart InterpolationEnd': t.special(t.brace),
         '.': t.derefOperator,
-        ', ;': t.separator
-      })
-    ]
+        ', ;': t.separator,
+      }),
+    ],
   }),
   languageData: {
     closeBrackets: { brackets: ['(', '[', '{', "'", '"'] },
-    wordChars: '$#'
-  }
+    wordChars: '$#',
+  },
 })
 
-export function expr (config: { complitions?: Completion[] } = {}) {
-  return new LanguageSupport(exprlang, exprlang.data.of({
-    autocomplete: completeFromList(config.complitions || [])
-  }))
+export function expr(config: { complitions?: Completion[] } = {}) {
+  return new LanguageSupport(
+    exprlang,
+    exprlang.data.of({
+      autocomplete: completeFromList(config.complitions || []),
+    }),
+  )
 }

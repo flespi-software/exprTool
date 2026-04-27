@@ -1,13 +1,21 @@
 <template>
- <q-dialog ref="dialogRef" @hide="onDialogHide">
-    <q-card class="q-dialog-plugin" style="min-width: 50vw;" :class="{'bg-grey-9': isDark}">
-      <q-card-section style="height: 80vh;" class="scroll q-pa-none">
-        <functions-table :functions="functions" :filter="filter" :theme="theme"/>
+  <q-dialog ref="dialogRef" @hide="onDialogHide">
+    <q-card class="q-dialog-plugin" style="min-width: 50vw" :class="{ 'bg-grey-9': isDark }">
+      <q-card-section style="height: 80vh" class="scroll q-pa-none">
+        <functions-table :functions="functions" :filter="filter" :theme="theme" />
       </q-card-section>
       <q-card-actions>
-        <q-input v-model="filter" type="text" label="Filter" dense class="col-10" :dark="isDark" standout="bg-grey-4 text-grey-9"/>
+        <q-input
+          v-model="filter"
+          type="text"
+          label="Filter"
+          dense
+          class="col-10"
+          :dark="isDark"
+          standout="bg-grey-4 text-grey-9"
+        />
         <div class="col-2 text-center">
-          <q-btn flat label="Close" @click="onCancelClick" :color="isDark ? 'white' : ''"/>
+          <q-btn flat label="Close" @click="onCancelClick" :color="isDark ? 'white' : ''" />
         </div>
       </q-card-actions>
     </q-card>
@@ -15,30 +23,28 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, PropType, computed } from 'vue'
+import { defineComponent, ref, computed, PropType } from 'vue'
 import FunctionsTable from './FunctionsTable.vue'
 import { useDialogPluginComponent } from 'quasar'
 import { TFlespiExprFunction } from 'src/api/flespi'
 
 export default defineComponent({
+  name: 'FunctionsDialog',
   props: {
     functions: {
-      type: Array as PropType<TFlespiExprFunction[]>
+      type: Array as PropType<TFlespiExprFunction[]>,
     },
     theme: {
-      type: String as PropType<'dark'|'white'>,
-      default: 'white'
-    }
+      type: String as PropType<'dark' | 'white'>,
+      default: 'white',
+    },
   },
   components: { FunctionsTable },
-  emits: [
-    ...useDialogPluginComponent.emits
-  ],
+  emits: [...useDialogPluginComponent.emits],
 
-  setup (props) {
+  setup(props) {
     const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
-    const filter = ref('')
-
+    const filter = ref<string>('')
     const isDark = computed<boolean>(() => props.theme === 'dark')
 
     return {
@@ -46,11 +52,11 @@ export default defineComponent({
       isDark,
       dialogRef,
       onDialogHide,
-      onOKClick () {
+      onOKClick() {
         onDialogOK()
       },
-      onCancelClick: onDialogCancel
+      onCancelClick: onDialogCancel,
     }
-  }
+  },
 })
 </script>

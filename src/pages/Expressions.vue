@@ -1,13 +1,27 @@
 <template>
   <div class="q-pa-sm window-height" :class="{ 'bg-grey-9': theme === 'dark' }">
-    <div class="q-pb-sm" style="height: 120px;">
-      <expression-input v-model="expression" :errors="dataMappedErrors || errors" :functions="functions" :cols="messagesFields" :theme="theme"/>
-      <q-btn round flat :color="theme === 'dark' ? 'white' : ''" icon="mdi-information-outline" @click="showFunctions" class="absolute-top-right" style="right: 8px; top: 8px;">
+    <div class="q-pb-sm" style="height: 120px">
+      <expression-input
+        v-model="expression"
+        :errors="dataMappedErrors || errors"
+        :functions="functions"
+        :cols="messagesFields"
+        :theme="theme"
+      />
+      <q-btn
+        round
+        flat
+        :color="theme === 'dark' ? 'white' : ''"
+        icon="mdi-information-outline"
+        @click="showFunctions"
+        class="absolute-top-right"
+        style="right: 8px; top: 8px"
+      >
         <q-tooltip>Show all functions</q-tooltip>
       </q-btn>
     </div>
     <messages-table
-      style="height: calc(100% - 120px);"
+      style="height: calc(100% - 120px)"
       :messages="input"
       :cols="cols || messagesFields"
       :validate-models="validation"
@@ -20,68 +34,88 @@
 </template>
 
 <script lang="ts">
-import { IFlespiResponse, TFlespiExprDataError, TFlespiExprError, TFlespiExprFunction, TFlespiExprValidationModel, TFlespiMessage } from 'src/api/flespi'
-import { useStore } from 'src/store'
+import { defineComponent, computed, watch, ref, toRefs, PropType, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { debounceAsync } from '../tools/debounceAsync'
-import { defineComponent, computed, watch, ref, toRefs, PropType, onMounted } from 'vue'
 import MessagesTable from 'src/components/expressions/MessagesTable.vue'
 import FunctionsDialog from 'src/components/expressions/FunctionsDialog.vue'
 import ExpressionInput from 'src/components/expressions/ExpressionInput.vue'
-import { busEventExpressionsSetData, busCommandReady, busEventExpressionsSetExpression, busEventExpressionsSetColumns } from '../bus'
+import {
+  busEventExpressionsSetData,
+  busCommandReady,
+  busEventExpressionsSetExpression,
+  busEventExpressionsSetColumns,
+} from '../bus'
+import { useExpressionsStore } from 'src/stores/expressions'
+import {
+  TFlespiExprDataError,
+  TFlespiExprError,
+  TFlespiExprFunction,
+  TFlespiExprValidationModel,
+  TFlespiMessage,
+} from 'src/api/flespi'
 
 export default defineComponent({
+  name: 'ExpressionsPage',
   props: {
     theme: {
-      type: String as PropType<'dark'|'white'>,
-      default: 'white'
-    }
+      type: String as PropType<'dark' | 'white'>,
+      default: 'white',
+    },
   },
   components: { MessagesTable, ExpressionInput },
-  setup (props) {
+  setup(props) {
     const { theme } = toRefs(props)
     const $q = useQuasar()
-    const $store = useStore()
+    const expressions = useExpressionsStore()
     const validation = ref<TFlespiExprValidationModel[]>([])
     const errors = ref<TFlespiExprError[] | undefined>([])
-    const cols = ref<string[]|undefined>()
+    const cols = ref<string[] | undefined>()
+
     const expression = computed<string>({
-      get () { return $store.state.expressions.expression },
-      set (expr: string): void {
-        $store.commit('expressions/setExpr', expr)
-      }
+      get() {
+        return expressions.expression
+      },
+      set(expr: string) {
+        expressions.setExpr(expr)
+      },
     })
     const input = computed<TFlespiMessage[]>({
-      get () { return $store.state.expressions.input },
-      set (input: TFlespiMessage[]): void {
-        $store.commit('expressions/setInput', input)
-      }
+      get() {
+        return expressions.input
+      },
+      set(val: TFlespiMessage[]) {
+        expressions.setInput(val)
+      },
     })
 
-    const messagesFields = computed<string[]>(() => {
-      return Object.keys(input.value.reduce((result, message) => {
-        return { ...result, ...message }
-      }, {}))
-    })
+    const messagesFields = computed<string[]>(() =>
+      Object.keys(
+        input.value.reduce(
+          (result, message) => ({ ...result, ...message }),
+          {} as TFlespiMessage,
+        ),
+      ),
+    )
 
-    const functions = computed<TFlespiExprFunction[]>(() => $store.state.expressions.functions)
+    const functions = computed<TFlespiExprFunction[]>(() => expressions.functions)
     const showFunctions = () => {
       $q.dialog({
         component: FunctionsDialog,
         componentProps: {
           functions: functions.value,
-          theme: theme.value
-        }
+          theme: theme.value,
+        },
       })
     }
-    type TFlespiExprValidResp = IFlespiResponse<TFlespiExprValidationModel, TFlespiExprError>
-    const validateData = debounceAsync(() => $store.dispatch('expressions/validateExpression'), 3000)
-    const validateExpr = () => $store.dispatch('expressions/validateExpression', { onlyValidate: true })
+
+    const validateData = debounceAsync(() => expressions.validateExpression(), 3000)
+    const validateExpr = () => expressions.validateExpression({ onlyValidate: true })
     const validate = async (): Promise<void> => {
-      const validExpr = await validateExpr() as TFlespiExprValidResp
+      const validExpr = await validateExpr()
       errors.value = validExpr.errors
       if (!validExpr.errors) {
-        const validData = await validateData() as TFlespiExprValidResp
+        const validData = await validateData()
         validation.value = validData.result
         errors.value = validData.errors
       } else {
@@ -92,32 +126,37 @@ export default defineComponent({
       input.value = messages
     }
     const updateCellHandler = (name: string, index: number, data: unknown) => {
-      $store.commit('expressions/updateCell', { index, name, data })
+      expressions.updateCell({ index, name, data })
       void validate()
     }
-    void $store.dispatch('expressions/getExpressionFunctions')
+    void expressions.getExpressionFunctions()
     watch([expression, input], validate, { immediate: true })
 
     busEventExpressionsSetData(updateInput)
-    busEventExpressionsSetExpression((expr) => { expression.value = expr })
-    busEventExpressionsSetColumns(columns => { cols.value = columns })
+    busEventExpressionsSetExpression((expr) => {
+      expression.value = expr
+    })
+    busEventExpressionsSetColumns((columns) => {
+      cols.value = columns
+    })
     onMounted(() => {
       busCommandReady()
     })
 
-    const dataError = ref<TFlespiExprDataError|undefined>()
-    const dataMappedErrors = computed<TFlespiExprError[]|undefined>(() => {
-      let res
+    const dataError = ref<TFlespiExprDataError | undefined>()
+    const dataMappedErrors = computed<TFlespiExprError[] | undefined>(() => {
       if (dataError.value) {
-        res = [{
-          code: 2,
-          reason: dataError.value.reason,
-          column: dataError.value.column
-        }]
+        return [
+          {
+            code: 2,
+            reason: dataError.value.reason,
+            column: dataError.value.column,
+          },
+        ]
       }
-      return res
+      return undefined
     })
-    function setDataError (error:TFlespiExprDataError|undefined) {
+    function setDataError(error: TFlespiExprDataError | undefined) {
       dataError.value = error
     }
 
@@ -133,8 +172,8 @@ export default defineComponent({
       messagesFields,
       cols,
       setDataError,
-      dataMappedErrors
+      dataMappedErrors,
     }
-  }
+  },
 })
 </script>

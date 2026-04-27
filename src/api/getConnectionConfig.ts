@@ -1,9 +1,21 @@
-import packageJson from '../../package.json'
+import { IRestConnectionConfig } from './flespi-io'
 
-export default () => {
-  const version = packageJson.version
+export interface ISocketConnectionConfig {
+  server: string
+  clientId: string
+  mqttSettings: {
+    protocolVersion: number
+    wsOptions: { objectMode: boolean; perMessageDeflate: boolean }
+  }
+}
 
-  let rest,
+export interface IConnectionConfig {
+  socketConfig: ISocketConnectionConfig
+  httpConfig: IRestConnectionConfig
+}
+
+export default (): IConnectionConfig => {
+  let rest: string | undefined,
     socket = ''
   /* if local dev build */
   if (DEV && LOCAL) {
@@ -22,15 +34,19 @@ export default () => {
   }
 
   const isDev = DEV || (PROD && window.location.host.indexOf('flespi.io') === -1)
-  const mqttSettings = { protocolVersion: 5, wsOptions: { objectMode: false, perMessageDeflate: true } }
-  const clientId = `flespi-expr-tools-${version}${isDev ? '-dev' : ''}-${Math.random().toString(16).substr(2, 8)}`
-  const connectionConfig = {
+  const mqttSettings = {
+    protocolVersion: 5,
+    wsOptions: { objectMode: false, perMessageDeflate: true },
+  }
+  const clientId = `flespi-expr-tools-${__APP_VERSION__}${
+    isDev ? '-dev' : ''
+  }-${Math.random().toString(16).substring(2, 10)}`
+  return {
     socketConfig: {
       server: socket,
       clientId,
-      mqttSettings
+      mqttSettings,
     },
-    httpConfig: { server: rest, flespiApp: clientId }
+    httpConfig: { server: rest, flespiApp: clientId },
   }
-  return connectionConfig
 }

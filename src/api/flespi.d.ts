@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 export enum ETimezones {
   UTC = 'UTC',
   AfricaAbidjan = 'Africa/Abidjan',
@@ -450,7 +449,6 @@ export type TFlespiAcl = {
   submodules: TFlespiAclSubmodule[],
   uri: string
 }
-// eslint-disable-next-line no-unused-vars
 export enum EFlespiTokenType { Standart, Master, Acl }
 export type TFlespiTokenAccess = {
   acl?: TFlespiAcl[],

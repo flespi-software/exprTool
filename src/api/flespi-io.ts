@@ -1,5 +1,12 @@
-import { IFlespiResponse, TFlespiError, TFlespiExprFunction, TFlespiExprData, TFlespiRegion, TFlespiExprValidationModel, TFlespiTokenInfo } from './flespi'
-import Connection from 'flespi-io-js/dist/rest'
+import {
+  IFlespiResponse,
+  TFlespiError,
+  TFlespiExprFunction,
+  TFlespiExprData,
+  TFlespiRegion,
+  TFlespiExprValidationModel,
+  TFlespiTokenInfo,
+} from './flespi'
 import getConnectionConfig from './getConnectionConfig'
 import { AxiosResponse, AxiosError } from 'axios'
 
@@ -11,39 +18,53 @@ export interface IConnectorError<T> extends AxiosError<T> {
 }
 
 export interface IRestConnectionConfig {
-  server: string,
-  token?: string,
+  server?: string
+  token?: string
   flespiApp?: string
 }
 
 export interface IConnector {
-  [prop: string]: unknown,
-  token: string,
-  config: IRestConnectionConfig,
-  setRegion (region: TFlespiRegion): void,
+  [prop: string]: unknown
+  token: string
+  config: IRestConnectionConfig
+  setRegion(region: TFlespiRegion): void
   http: {
-    get <T>(path: string) : Promise<IConnectorResponse<IFlespiResponse<T, TFlespiError>>>
+    get<T>(
+      path: string,
+    ): Promise<IConnectorResponse<IFlespiResponse<T, TFlespiError>>>
     platform: {
       customer: {
         tokens: {
-          get (selector: string, params?: { fields: string }): Promise<IConnectorResponse<IFlespiResponse<TFlespiTokenInfo, TFlespiError>>>
+          get(
+            selector: string,
+            params?: { fields: string },
+          ): Promise<IConnectorResponse<IFlespiResponse<TFlespiTokenInfo, TFlespiError>>>
         }
       }
-    },
+    }
     storage: {
       expressions: {
         functions: {
-          get (): Promise<IConnectorResponse<IFlespiResponse<TFlespiExprFunction, TFlespiError>>>
-        },
+          get(): Promise<
+            IConnectorResponse<IFlespiResponse<TFlespiExprFunction, TFlespiError>>
+          >
+        }
         test: {
-          post (data: TFlespiExprData): Promise<IConnectorResponse<IFlespiResponse<TFlespiExprValidationModel, TFlespiError>>>
+          post(
+            data: TFlespiExprData,
+          ): Promise<
+            IConnectorResponse<IFlespiResponse<TFlespiExprValidationModel, TFlespiError>>
+          >
         }
       }
     }
   }
 }
 
-export const config = getConnectionConfig().httpConfig
-// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-const connector = new Connection(config) as IConnector
-export default connector
+/**
+ * Pre-computed HTTP config (server URL + flespiApp client-id).
+ * Used for deriving `authHost` in Login.vue without touching the $connector.
+ * The actual runtime Connection instance is created by `src/boot/flespi-io.ts`
+ * via `ConnectionPlugin` and exposed as `this.$connector` in Pinia stores.
+ */
+export const config: IRestConnectionConfig = getConnectionConfig().httpConfig

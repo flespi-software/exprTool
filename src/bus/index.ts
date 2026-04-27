@@ -1,11 +1,13 @@
-import { TFlespiMessage } from './../api/flespi.d'
+import { TFlespiMessage } from '../api/flespi'
 import { useIntegrationBus } from './integrationBus'
 
 const { bus } = useIntegrationBus()
 
-export function busEventExpressionsSetData (callback: (data:TFlespiMessage[]) => void) {
+export function busEventExpressionsSetData(
+  callback: (data: TFlespiMessage[]) => void,
+) {
   bus.on('ExpressionsSetData', (data) => {
-    let messages = data as TFlespiMessage|TFlespiMessage[]
+    let messages = data as TFlespiMessage | TFlespiMessage[]
     if (!Array.isArray(messages)) {
       messages = [messages]
     }
@@ -13,20 +15,18 @@ export function busEventExpressionsSetData (callback: (data:TFlespiMessage[]) =>
   })
 }
 
-export function busEventExpressionsSetExpression (callback: (expr: string) => void) {
+export function busEventExpressionsSetExpression(callback: (expr: string) => void) {
   bus.on('ExpressionsSetExpression', (expr) => {
-    const expression = expr as string
-    callback(expression)
+    callback(expr as string)
   })
 }
 
-export function busEventExpressionsSetColumns (callback: (cols: string[]) => void) {
+export function busEventExpressionsSetColumns(callback: (cols: string[]) => void) {
   bus.on('ExpressionsSetColumns', (cols) => {
-    const columns = cols as string[]
-    callback(columns)
+    callback(cols as string[])
   })
 }
 
-export function busCommandReady () {
+export function busCommandReady() {
   bus.send('ready')
 }

@@ -7,32 +7,20 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: '',
-        component: () => import('pages/Index.vue'),
-        props: (route) => {
-          return {
-            theme: route.query.theme || 'white'
-          }
-        }
+        component: () => import('pages/IndexPage.vue'),
+        props: (route) => ({ theme: route.query.theme || 'white' }),
       },
       {
         path: 'expr',
         component: () => import('pages/Expressions.vue'),
-        props: (route) => {
-          return {
-            theme: route.query.theme || 'white'
-          }
-        }
+        props: (route) => ({ theme: route.query.theme || 'white' }),
       },
       {
         path: 'expr-functions',
         component: () => import('pages/ExpressionFunctions.vue'),
-        props: (route) => {
-          return {
-            theme: route.query.theme || 'white'
-          }
-        }
-      }
-    ]
+        props: (route) => ({ theme: route.query.theme || 'white' }),
+      },
+    ],
   },
   { path: '/login', component: () => import('pages/Login.vue') },
 
@@ -40,8 +28,8 @@ const routes: RouteRecordRaw[] = [
   // but you can also remove it
   {
     path: '/:catchAll(.*)*',
-    component: () => import('pages/Error404.vue')
-  }
+    component: () => import('pages/ErrorNotFound.vue'),
+  },
 ]
 
 export default routes
